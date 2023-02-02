@@ -13,15 +13,15 @@
 
 ここからはFig.1に示した5つのノード$\mathcal{V}=\{v_1,v_2,v_3,v_4,v_5\}$と5つのエッジ$\mathcal{E}=\{e_{12},e_{13},e_{15},e_{23},e_{34},\}$で構成されたグラフを例に理解を進めていきます．
 各ノード$v_i$は4つ四角で表現されている特徴量$\mathbf{x}_i\in\mathbb{R}^{c}$を持っており，$v_j$とエッジ$e_{ij}$で接続されている．
-ここで$c$は特徴量の次元であり，図では$c=4$である．
-<img src="assert/graph_structure.png" width="512">
+ここで$c$は特徴量の次元で，図では$c=4$です．
+<img src="assert/graph-convolutional-network/graph_structure.png" width="512">
 *Fig.1 グラフ構造*
 
 ここで，グラフの特徴量は$\mathbf{X}=[\mathbf{x}_1,\mathbf{x}_2,\mathbf{x}_3,\mathbf{x}_4,\mathbf{x}_5]^\top$のようにノードの特徴量を並べたものとなります(Fig.2)．
 またエッジの接続は隣接行列$\mathbf{A}\in\mathbb{R}^{V \times V}$として表現できます．
 隣接行列にはエッジの向きを表現できるものと，向きは考慮しないものがありますが，ここでは簡単のため向きは考慮しないものとします．
 そうするとノード$v_i$と$v_j$の間にエッジがあると，隣接行列$\mathbf{A}$の要素$a_{ij}=1$となり，ない場合は$a_{ij}=0$となります．
-<img src="assert/matrix.png" width="512">
+<img src="assert/graph-convolutional-network/matrix.png" width="512">
 *Fig.2 グラフ特徴と隣接行列*
 
 では，実際にpythonの変数として定義してみましょう！
@@ -81,7 +81,7 @@ ax[1].invert_yaxis()
 
 この隣接行列は自身への接続が考慮されていないので，単位行列$\mathbf{I}\in\mathbb{R}^{V\times V}$を追加して自己ループを考慮します．
 自己ループを追加した隣接行列$\tilde{\mathbf{A}}=\mathbf{A+I}$はFig.3のような行列になります
-<img src="assert/self_loop.png" width="512">
+<img src="assert/graph-convolutional-network/self_loop.png" width="512">
 *Fig.3 自己ループを考慮した隣接行列*
 
 よって上記のソースコードは以下のように修正されます．
@@ -117,7 +117,7 @@ ax[1].invert_yaxis()
 ## 隣接行列を持ちいたノードの集約
 ここでは隣接行列$\mathbf{A}$を用いてノード特徴$\mathbf{X}$を集約していきます．
 なんとここまでくればドット積するだけで集約はできます．
-<img src="assert/ax.png" width="512">
+<img src="assert/graph-convolutional-network/ax.png" width="512">
 Fig.4 ドット積
 
 Fig.4のオレンジで囲ってある部分を行列計算してみください．
@@ -167,12 +167,12 @@ ax[1].invert_yaxis()
 一番簡単なのは，合計ではなく平均で集約してしまうことですね．
 グラフの分野では次数行列と呼ばれる接続ノードの数を表す行列$\tilde{\mathbf{D}}$を用います
 (~がついているのは$\tilde{\mathbf{A}}$と対応していることを示すためです）
-次数行列の各要素は$\tilde{d}_{ii}=\sum_{j=1}^{V}\tilde{a}_ij$と計算できます(Fig.5)．
-<img src="assert/d.png" width="512">
+次数行列の各要素は$\tilde{d}_{ii}=\sum_{j=1}^{V}\tilde{a}_{ij}$と計算できます(Fig.5)．
+<img src="assert/graph-convolutional-network/d.png" width="512">
 *Fig.5 次数行列*
 
 
-次数行列を用いると平均による集約は$\tilde{\mathbf{D}}^{-1}\tilde{\mathbf{A}}\mathbf{X}$と計算ができる．
+次数行列を用いると平均による集約は$\tilde{\mathbf{D}}^{-1}\tilde{\mathbf{A}}\mathbf{X}$と計算ができます．
 実際にpythonで計算してみましょう.
 
 
@@ -241,18 +241,18 @@ ax[1].invert_yaxis()
 ## 畳み込み演算
 画像のCNNを思い出してみてください．
 縦のエッジを捉えるカーネルや斜めのエッジを捉えるカーネルの重みを用いて加重平均することで情報を周囲のピクセルの情報を集約していましたよね（Fig.6）
-<img src="assert/cnn.png" width="512">
+<img src="assert/graph-convolutional-network/cnn.png" width="512">
 *Fig.6 CNNの畳み込みのイメージ*
 
 しかし，グラフではノードによって隣接ノードの数が違うので，3x3カーネルのような固定の重みを使うことができません．
 そこでエッジの重みを学習することで代用します．
 隣接ノードの特徴$\mathbf{x}$が$\mathbf{W}$によって重み付けされて集約されます（Fig.7）．
-<img src="assert/gcn1.png" width="512">
+<img src="assert/graph-convolutional-network/gcn.png" width="512">
 *Fig.7 エッジの重み付け*
 
 数式では$\tilde{\mathbf{D}}^{-\frac{1}{2}}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-\frac{1}{2}}\mathbf{X}\mathbf{W}$のように表現できる．<bf>
-ここで$\mathbf{W}\in\mathbb{R}^{c\times c_{out}}$となる．
-数式通り実装すると以下のようになる．
+ここで$\mathbf{W}\in\mathbb{R}^{c\times c_{out}}$となります．
+数式通り実装すると以下のようになります．
 
 
 ```python
@@ -289,9 +289,9 @@ ax[1].invert_yaxis()
 ```
 
 実際の学習では，このWの重みを学習することによって重要度の低いノードの重みは小さく，重要度の高いノードの重みは大きくなるように更新します．
-また，上記の実装をCNNらしく実装してみる．
+また，上記の実装をCNNらしく実装してみましょう．
 つまり$1\times V$の画像と考え，1x1のカーネルで畳み込みます．
-<img src="assert/gcn.png" width="512">
+<img src="assert/graph-convolutional-network/gcn_like_cnn.png" width="512">
 *Fig.8 CNNに則したGCNのイメージ*
 
 
