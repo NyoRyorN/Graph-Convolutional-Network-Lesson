@@ -1,5 +1,6 @@
-venv
+.venv
 markdown
 formula
 *.py
 *.afpub
+*.mp4
