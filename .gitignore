@@ -4,3 +4,5 @@ formula
 *.py
 *.afpub
 *.mp4
+/envs/
+.python-version
